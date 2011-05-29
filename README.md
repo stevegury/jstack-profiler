@@ -1,6 +1,7 @@
 # Jstack Profiler
 
-Simple profiler that take concatenation of jstack's output as input
+Simple profiler that take concatenation of jstack's output as input.
+It's useful, when you want to find what's going on a production server that you can't stop or profile (with classic profiler).
 
 # How to use
 
@@ -12,5 +13,4 @@ Ctrl+C to terminate
 Then launch the analyze with:
 
 	$ sbt "profiler jstack.log"
-
 
