@@ -97,11 +97,16 @@ object Profiler {
           None
       }
       else {
+        // compute the newDescendants map by applying filter on each child
         val newDescendants : Map[String,CallGraph] = descendants.values.flatMap{
           _.filter(predicate, this :: callstack)
         }.map{ g => (g.name,g) }(breakOut)
-        val newCount = newDescendants.values.foldLeft(0){ case (sum,g) => sum + g.count }
-        Some(new CallGraph(name, Runnable, newCount, newDescendants))
+        if( newDescendants.isEmpty )
+          None // propagate the callstack deletion
+        else{
+          val newCount = newDescendants.values.foldLeft(0){ case (sum,g) => sum + g.count }
+          Some(new CallGraph(name, Runnable, newCount, newDescendants))
+        }
       }
     }
   }
