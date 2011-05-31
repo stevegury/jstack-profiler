@@ -1,5 +1,6 @@
 import java.io.File
 import scala.io.Source
+import collection.breakOut
 
 object Profiler {
 
@@ -88,13 +89,22 @@ object Profiler {
     }
 
     // filter the graph based on the predicate
-    def filter( predicate : CallGraph => Boolean ) : CallGraph = {
-      // TODO
-      this
+    def filter( predicate : CallGraph => Boolean ) : Option[CallGraph] = {
+      if( descendants.isEmpty ) {
+        if( predicate(this) )
+          Some(this)
+        else
+          None
+      }
+      else {
+        val newDescendants : Map[String,CallGraph] = descendants.values.flatMap{ _.filter(predicate) }.map{ g => (g.name,g) }(breakOut)
+        val newCount = newDescendants.values.foldLeft(0){ case (sum,g) => sum + g.count }
+        Some(new CallGraph(name, Runnable, newCount, newDescendants))
+      }
     }
   }
 
-  def profileThread( it : Iterator[String] , predicate : List[String] => Boolean = _ => true ) : Map[String,CallGraph] = {
+  def profileThread( it : Iterator[String] ) : Map[String,CallGraph] = {
     def recProfile( threadName : String , state : String, callStack : List[String], profilingPerThread : Map[String,CallGraph] ) : Map[String,CallGraph] = {
       if( it.hasNext ) {
         val line = it.next()
@@ -103,7 +113,7 @@ object Profiler {
           case CallRegex(call) => recProfile(threadName, state, call :: callStack ,profilingPerThread)
           case StateRegex(newState) => recProfile(threadName, newState, callStack, profilingPerThread)
           case "" =>
-            if( callStack.isEmpty || ! predicate(callStack) )
+            if( callStack.isEmpty )
               recProfile("", "", Nil, profilingPerThread)
             else {
               val root = profilingPerThread.getOrElse(threadName, new CallGraph())
@@ -129,17 +139,20 @@ object Profiler {
     }
     else {
       val file = new File( args(0) )
-      def filter( word : String )( callstack : List[String] ) = callstack.foldLeft(true){
-        case (containsNotString,line) => containsNotString && line.indexOf(word) == -1
+      def filter( word : String )( callGraph : CallGraph ) = {
+        def rec( currentNode : CallGraph, isGood : Boolean ) : Boolean = {
+          if( currentNode.name.contains(word) || currentNode.state != TimedWaiting )
+            false
+          else if( currentNode.descendants.isEmpty )
+            true
+          else
+            currentNode.descendants.values.forall{ g => rec(g, isGood) }
+        }
+        rec( callGraph , true )
       }
-      val profilingPerThread = profileThread( Source.fromFile(file).getLines() , filter("YJP") )
-      val mergedProfiling = profilingPerThread.values.reduceLeft{ _.merge(_) }
+      val profilingPerThread = profileThread( Source.fromFile(file).getLines() )
+      val mergedProfiling = profilingPerThread.values.reduceLeft{ _.merge(_) }.filter( filter("YJP") ).get
       mergedProfiling.criticalPath.foreach{ x => println(" + "+x) }
-
-      // val runningThreads = profilingPerThread.filter( _.state == Running )
-      // val firstThread = sortByUsage(runningThreads).head
-      // println( "Critical path of thread: " + firstThread.name )
-      // firstThread.criticalPath.foreach{ x => println(" + "+x) }
     }
   }
 
