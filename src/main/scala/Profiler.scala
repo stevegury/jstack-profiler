@@ -89,15 +89,17 @@ object Profiler {
     }
 
     // filter the graph based on the predicate
-    def filter( predicate : CallGraph => Boolean ) : Option[CallGraph] = {
+    def filter( predicate : List[CallGraph] => Boolean , callstack : List[CallGraph] = Nil ) : Option[CallGraph] = {
       if( descendants.isEmpty ) {
-        if( predicate(this) )
+        if( predicate(callstack.reverse) )
           Some(this)
         else
           None
       }
       else {
-        val newDescendants : Map[String,CallGraph] = descendants.values.flatMap{ _.filter(predicate) }.map{ g => (g.name,g) }(breakOut)
+        val newDescendants : Map[String,CallGraph] = descendants.values.flatMap{
+          _.filter(predicate, this :: callstack)
+        }.map{ g => (g.name,g) }(breakOut)
         val newCount = newDescendants.values.foldLeft(0){ case (sum,g) => sum + g.count }
         Some(new CallGraph(name, Runnable, newCount, newDescendants))
       }
@@ -134,21 +136,12 @@ object Profiler {
   }
 
   def main( args : Array[String] ) {
-    if( args.isEmpty ) {
+    if( args.isEmpty )
       usage()
-    }
     else {
       val file = new File( args(0) )
-      def filter( word : String )( callGraph : CallGraph ) = {
-        def rec( currentNode : CallGraph, isGood : Boolean ) : Boolean = {
-          if( currentNode.name.contains(word) || currentNode.state != TimedWaiting )
-            false
-          else if( currentNode.descendants.isEmpty )
-            true
-          else
-            currentNode.descendants.values.forall{ g => rec(g, isGood) }
-        }
-        rec( callGraph , true )
+      def filter( word : String )( callstack : List[CallGraph] ) = {
+        callstack.forall{ _.name.contains(word) } && callstack.reverse.head.state == TimedWaiting
       }
       val profilingPerThread = profileThread( Source.fromFile(file).getLines() )
       val mergedProfiling = profilingPerThread.values.reduceLeft{ _.merge(_) }.filter( filter("YJP") ).get
