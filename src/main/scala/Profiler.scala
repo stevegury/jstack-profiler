@@ -82,7 +82,8 @@ object Profiler {
             case None => (name,node)
           }
         } ++ (smallest -- biggest.keys) // add node only present in smallest descendant list
-        new CallGraph(name, Runnable, count + graph.count, newDescendants )
+        val newCount = newDescendants.values.foldLeft(0){ case (sum,g) => sum + g.count }
+        new CallGraph(name, Runnable, newCount, newDescendants )
       }
       else // in case of root inequality, return a new node with the two graphs as children
         new CallGraph(name + "#" + graph.name, Runnable, count + graph.count, Map(name -> this, graph.name -> graph))
