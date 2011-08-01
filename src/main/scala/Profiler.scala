@@ -150,8 +150,8 @@ object Profiler {
         callstack.forall{ _.name.contains(word) } && callstack.reverse.head.state == TimedWaiting
       }
       val profilingPerThread = profileThread( Source.fromFile(file).getLines() )
-      val mergedProfiling = profilingPerThread.values.reduceLeft{ _.merge(_) }.filter( filter("YJP") ).get
-      mergedProfiling.criticalPath.foreach{ x => println(" + "+x) }
+      val mergedProfiling = profilingPerThread.values.reduceLeft{ _.merge(_) }
+      mergedProfiling.criticalPath.foreach{ x => println(" + " + x) }
     }
   }
 

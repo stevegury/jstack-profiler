@@ -16,7 +16,12 @@ class Project(info: ProjectInfo) extends DefaultProject(info) with IdeaProject {
   }.dependsOn(compile)
 
 
-  lazy val profiler = task {
-    runTask( Some("Profiler"), runClasspath, List("D:/jstack.log")).run
+  lazy val profiler = task { args =>
+    profilerConstructor( args(0) )
+  }
+
+  def profilerConstructor( fileName : String ) = task {
+    runTask( Some("Profiler"), runClasspath, fileName).run
   }.dependsOn(compile)
+
 }
