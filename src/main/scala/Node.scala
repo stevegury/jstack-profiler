@@ -20,13 +20,16 @@ object Node {
 
 case class Node(name: String, state: State, count: Int, children: Set[Node] = Set.empty[Node]) {
 
-  def expand(current: List[String] = Nil): List[Node] =
-    if (children.isEmpty) {
-      val names = Node.filterRoot((name :: current).reverse)
-      def node  = Parser.toGraph(names, state)
-      (1 to count) map { _ => node } toList
-    } else
-      children.toList flatMap { _.expand(name :: current) }
+  def expand(current: List[String] = Nil): List[Node] = {
+    val names = name :: current
+    val childPaths = children.toList flatMap { _.expand(names) }
+
+    lazy val thisNode = Parser.toGraph(Node.filterRoot(names.reverse), state)
+    val currentNodePathsCount = count - childPaths.size
+
+    childPaths ++ // empty if we are a leaf node
+    List.fill(currentNodePathsCount)(thisNode) // usually empty if we are a non-leaf node
+  }
 
   def merge(graph: Node): Node =
     if (this == graph)
