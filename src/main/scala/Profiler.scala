@@ -8,10 +8,12 @@ object Profiler {
     println(title)
     println("-" * title.size)
     val sortedMethods = Analysis.methodsBreakOut(graph).toSeq.sortBy(- _._1)
-    val (total,root) = sortedMethods(0)
-    require(root == Node.ROOT)
+    // there might be no synthetic root node if there is only a single unique root method to begin with
+    val sortedMethodsWithoutRoot = if (sortedMethods(0)._2 == Node.ROOT) sortedMethods.drop(1)
+      else sortedMethods
+    val (total,_) = sortedMethods(0)
     println("rank\ttime\tname")
-    sortedMethods.drop(1).zipWithIndex foreach { case ((count, name), i) =>
+    sortedMethodsWithoutRoot.zipWithIndex foreach { case ((count, name), i) =>
       println("%d\t%.02f%%\t%s".format(i, 100 * count.toFloat / total, name))
     }
     println("")
