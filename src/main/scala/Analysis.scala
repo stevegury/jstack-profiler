@@ -21,10 +21,10 @@ object Analysis {
       topCriticalPath(graph - path, n - 1, newRes)
     }
 
-  def methodsBreakOut(graph: Node): Map[Int, String] = {
+  def methodsBreakOut(graph: Node): Map[String, Int] = {
     def loop(graph: Node): Map[String, Int] = {
       Map(graph.name -> graph.count) ++ (graph.children flatMap { loop(_) })
     }
-    loop(graph) map { case (k, v) => (v, k) }
+    loop(graph)
   }
 }
