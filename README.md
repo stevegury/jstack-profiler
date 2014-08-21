@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/stevegury/jstack-profiler.png)](http://travis-ci.org/stevegury/jstack-profiler)
+
 # Jstack Profiler
 
 Simple profiler that takes concatenation of jstack's output as input.
