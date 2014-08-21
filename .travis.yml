@@ -1,4 +1,3 @@
 language: scala
 scala:
-  - 2.11.2
-sbt test
+   - 2.11.2
