@@ -21,7 +21,7 @@ Ctrl+C to terminate
 
 Then launch the analyze with:
 
-	$ cat jstack.log > java -jar target/jstack-profiler-assembly-0.1.jar
+	$ cat jstack.log | java -jar target/jstack-profiler-assembly-0.2.jar
 
 Here is an example of the output:
 
