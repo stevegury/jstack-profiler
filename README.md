@@ -7,7 +7,7 @@ It's useful, when you want to find out what's going on a production server that 
 
 # Release
 
-The latest release is 0.3, you can find the jar here.
+The latest release is 0.3, you can find the [jar here](https://github.com/stevegury/jstack-profiler/releases/download/v0.3/jstack-profiler-assembly-0.3.jar).
 
 # How to compile
 
@@ -18,6 +18,12 @@ It generates a big jar file in the target directory
 # How to use
 
 ## With the script
+
+There is a script that take care of jstacking a java process and analyzing its result.
+
+	Usage: ./profile.sh <PID> [PROFILING_IN_SECONDS (default=60)] [SAMPLE_PERIOD_IN_SECOND (default=5)]"
+
+Example:
 
 	$ ./profile.sh 20399 180 10
 	Collecting 18 stack traces of process 20399
