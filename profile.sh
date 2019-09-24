@@ -10,7 +10,7 @@ PID=$1
 PROFILING_IN_SECONDS=${2:-120}
 SAMPLE_PERIOD_IN_SECOND=${3:-5}
 
-JAR="target/scala-2.12/jstack-profiler-assembly-0.3.jar"
+JAR=${PROFILER_JAR:-"target/scala-2.12/jstack-profiler-assembly-0.3.jar"}
 
 if [ ! -f $JAR ]
 then
@@ -43,7 +43,7 @@ do
   jstack $1 >> $OUTPUT
   printf "."
   sleep $SAMPLE_PERIOD_IN_SECOND
-  i=$[$i + 1]
+  i=$((i + 1))
 done
 echo ""
 echo "Processing $ITERATIONS stack traces..."
